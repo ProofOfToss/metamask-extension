@@ -8,7 +8,7 @@ const extend = require('xtend')
 const EthQuery = require('eth-query')
 const createEventEmitterProxy = require('../lib/events-proxy.js')
 const RPC_ADDRESS_LIST = require('../config.js').network
-const DEFAULT_RPC = RPC_ADDRESS_LIST['rinkeby']
+const DEFAULT_RPC = RPC_ADDRESS_LIST['localhost']
 const INFURA_PROVIDER_TYPES = ['ropsten', 'rinkeby', 'kovan', 'mainnet']
 
 module.exports = class NetworkController extends EventEmitter {
