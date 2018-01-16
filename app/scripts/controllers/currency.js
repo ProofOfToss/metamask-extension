@@ -45,10 +45,18 @@ class CurrencyController {
 
   updateConversionRate () {
     const currentCurrency = this.getCurrentCurrency()
+    var convRate
+
     return fetch(`https://api.infura.io/v1/ticker/eth${currentCurrency.toLowerCase()}`)
     .then(response => response.json())
     .then((parsedResponse) => {
-      this.setConversionRate(Number(parsedResponse.bid))
+      convRate = Number(parsedResponse.bid)
+
+      return fetch(`https://api.infura.io/v1/ticker/ethbtc`)
+    })
+    .then(response => response.json())
+    .then((parsedResponse) => {
+      this.setConversionRate(convRate / Number(parsedResponse.ask))
       this.setConversionDate(Number(parsedResponse.timestamp))
     }).catch((err) => {
       if (err) {

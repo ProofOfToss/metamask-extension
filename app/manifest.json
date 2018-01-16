@@ -1,10 +1,10 @@
 {
-  "name": "MetaMask",
-  "short_name": "Metamask",
+  "name": "Proof of Toss",
+  "short_name": "Proof of Toss",
   "version": "3.13.3",
   "manifest_version": 2,
-  "author": "https://metamask.io",
-  "description": "Ethereum Browser Extension",
+  "author": "http://toss.pro",
+  "description": "Proof of Toss Browser Extension",
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
@@ -37,7 +37,7 @@
       "19": "images/icon-19.png",
       "38": "images/icon-38.png"
     },
-    "default_title": "MetaMask",
+    "default_title": "Proof of Toss",
     "default_popup": "popup.html"
   },
   "content_scripts": [
