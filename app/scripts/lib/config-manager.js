@@ -155,7 +155,7 @@ ConfigManager.prototype.getCurrentRpcAddress = function () {
       return RINKEBY_RPC
 
     default:
-      return provider && provider.rpcTarget ? provider.rpcTarget : RINKEBY_RPC
+      return provider && provider.rpcTarget ? provider.rpcTarget : LOCALHOST_RPC_URL
   }
 }
 
