@@ -46,7 +46,7 @@ InfoScreen.prototype.render = function () {
           // current version number
 
           h('.info.info-gray', [
-            h('div', 'Metamask'),
+            h('div', 'Proof of Toss'),
             h('div', {
               style: {
                 marginBottom: '10px',
@@ -110,7 +110,7 @@ InfoScreen.prototype.render = function () {
 
               h('div', [
                 h('a', {
-                  href: 'https://metamask.io/',
+                  href: 'http://toss.pro/',
                   target: '_blank',
                 }, [
                   h('img.icon-size', {
@@ -129,7 +129,7 @@ InfoScreen.prototype.render = function () {
               h('div', [
                 h('.fa.fa-twitter', [
                   h('a.info', {
-                    href: 'https://twitter.com/metamask_io',
+                    href: 'https://twitter.com/proof_of_toss',
                     target: '_blank',
                   }, 'Follow us on Twitter'),
                 ]),
@@ -139,7 +139,7 @@ InfoScreen.prototype.render = function () {
                 h('a.info', {
                   target: '_blank',
                   style: { width: '85vw' },
-                  href: 'mailto:help@metamask.io?subject=Feedback',
+                  href: 'mailto:help@toss.pro?subject=Feedback',
                 }, 'Email us!'),
               ]),
             ]),

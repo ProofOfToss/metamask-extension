@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "MetaMask",
+    "message": "Proof of Toss",
     "description": "The name of the application"
   },
   "appDescription": {
-    "message": "EthereumのID管理",
+    "message": "Proof of TossのID管理",
     "description": "The description of the application"
   }
 }

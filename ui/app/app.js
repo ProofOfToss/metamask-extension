@@ -222,7 +222,7 @@ App.prototype.renderAppBar = function () {
 
 App.prototype.renderNetworkDropdown = function () {
   const props = this.props
-  const { provider: { type: providerType, rpcTarget: activeNetwork } } = props
+  const { provider: { /* type: providerType, */ rpcTarget: activeNetwork } } = props
   const rpcList = props.frequentRpcList
   const state = this.state || {}
   const isOpen = state.isNetworkMenuOpen

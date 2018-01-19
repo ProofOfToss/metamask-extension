@@ -7,6 +7,7 @@ const MAINNET_RPC = MetamaskConfig.network.mainnet
 const ROPSTEN_RPC = MetamaskConfig.network.ropsten
 const KOVAN_RPC = MetamaskConfig.network.kovan
 const RINKEBY_RPC = MetamaskConfig.network.rinkeby
+const LOCALHOST_RPC_URL = MetamaskConfig.network.localhost
 
 /* The config-manager is a convenience object
  * wrapping a pojo-migrator.

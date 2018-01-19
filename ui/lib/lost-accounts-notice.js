@@ -8,7 +8,7 @@ module.exports = function (lostAccounts) {
 
 We have successfully imported the accounts that were mis-generated, but they will no longer be recovered with your normal seed phrase.
 
-We have marked the affected accounts as "Loose", and recommend you transfer ether and tokens away from those accounts, or export & back them up elsewhere.
+We have marked the affected accounts as "Loose", and recommend you transfer SBTC and tokens away from those accounts, or export & back them up elsewhere.
 
 Your affected accounts are:
 ${lostAccounts.map(acct => ` - ${summary(acct)}`).join('\n')}
