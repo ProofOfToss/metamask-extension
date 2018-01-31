@@ -11,6 +11,8 @@ module.exports = MetamaskInpageProvider
 function MetamaskInpageProvider (connectionStream) {
   const self = this
 
+  self.originRpcAddress =  connectionStream._origin;
+
   // setup connectionStream multiplexing
   const mux = self.mux = new ObjectMultiplex()
   pump(
