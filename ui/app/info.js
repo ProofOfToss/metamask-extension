@@ -103,9 +103,9 @@ InfoScreen.prototype.render = function () {
             [
               h('div.fa.fa-support', [
                 h('a.info', {
-                  href: 'https://support.metamask.io',
+                  href: 'https://metamask.helpscoutdocs.com/',
                   target: '_blank',
-                }, 'Visit our Support Center'),
+                }, 'Visit our Knowledge Base'),
               ]),
 
               h('div', [

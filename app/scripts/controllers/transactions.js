@@ -43,6 +43,28 @@ module.exports = class TransactionController extends EventEmitter {
       txHistoryLimit: opts.txHistoryLimit,
       getNetwork: this.getNetwork.bind(this),
     })
+
+    this.txStateManager.getFilteredTxList({
+      status: 'unapproved',
+      loadingDefaults: true,
+    }).forEach((tx) => {
+      this.addTxDefaults(tx)
+      .then((txMeta) => {
+        txMeta.loadingDefaults = false
+        this.txStateManager.updateTx(txMeta, 'transactions: gas estimation for tx on boot')
+      }).catch((error) => {
+        this.txStateManager.setTxStatusFailed(tx.id, error)
+      })
+    })
+
+    this.txStateManager.getFilteredTxList({
+      status: 'approved',
+    }).forEach((txMeta) => {
+      const txSignError = new Error('Transaction found as "approved" during boot - possibly stuck during signing')
+      this.txStateManager.setTxStatusFailed(txMeta.id, txSignError)
+    })
+
+
     this.store = this.txStateManager.store
     this.txStateManager.on('tx:status-update', this.emit.bind(this, 'tx:status-update'))
     this.nonceTracker = new NonceTracker({
@@ -130,6 +152,10 @@ module.exports = class TransactionController extends EventEmitter {
     }
   }
 
+  wipeTransactions (address) {
+    this.txStateManager.wipeTransactions(address)
+  }
+
   // Adds a tx to the txlist
   addTx (txMeta) {
     this.txStateManager.addTx(txMeta)
@@ -139,7 +165,6 @@ module.exports = class TransactionController extends EventEmitter {
   async newUnapprovedTransaction (txParams) {
     log.debug(`MetaMaskController newUnapprovedTransaction ${JSON.stringify(txParams)}`)
     const initialTxMeta = await this.addUnapprovedTransaction(txParams)
-    this.emit('newUnapprovedTx', initialTxMeta)
     // listen for tx completion (success, fail)
     return new Promise((resolve, reject) => {
       this.txStateManager.once(`${initialTxMeta.id}:finished`, (finishedTxMeta) => {
@@ -167,11 +192,22 @@ module.exports = class TransactionController extends EventEmitter {
       status: 'unapproved',
       metamaskNetworkId: this.getNetwork(),
       txParams: txParams,
+      loadingDefaults: true,
     }
-    // add default tx params
-    await this.addTxDefaults(txMeta)
-    // save txMeta
     this.addTx(txMeta)
+    this.emit('newUnapprovedTx', txMeta)
+    // add default tx params
+    try {
+      await this.addTxDefaults(txMeta)
+    } catch (error) {
+      console.log(error)
+      this.txStateManager.setTxStatusFailed(txMeta.id, error)
+      throw error
+    }
+    txMeta.loadingDefaults = false
+    // save txMeta
+    this.txStateManager.updateTx(txMeta)
+
     return txMeta
   }
 
@@ -180,8 +216,10 @@ module.exports = class TransactionController extends EventEmitter {
     // ensure value
     txMeta.gasPriceSpecified = Boolean(txParams.gasPrice)
     txMeta.nonceSpecified = Boolean(txParams.nonce)
-    const gasPrice = txParams.gasPrice || this.getGasPrice ? this.getGasPrice()
-      : await this.query.gasPrice()
+    let gasPrice = txParams.gasPrice
+    if (!gasPrice) {
+      gasPrice = this.getGasPrice ? this.getGasPrice() : await this.query.gasPrice()
+    }
     txParams.gasPrice = ethUtil.addHexPrefix(gasPrice.toString(16))
     txParams.value = txParams.value || '0x0'
     // set gasLimit

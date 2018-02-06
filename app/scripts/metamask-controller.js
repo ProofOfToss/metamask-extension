@@ -5,7 +5,6 @@ const Dnode = require('dnode')
 const ObservableStore = require('obs-store')
 const asStream = require('obs-store/lib/asStream')
 const AccountTracker = require('./lib/account-tracker')
-const EthQuery = require('eth-query')
 const RpcEngine = require('json-rpc-engine')
 const debounce = require('debounce')
 const createEngineStream = require('json-rpc-middleware-stream/engineStream')
@@ -43,6 +42,8 @@ module.exports = class MetamaskController extends EventEmitter {
 
   constructor (opts) {
     super()
+
+    this.defaultMaxListeners = 20
 
     this.sendUpdate = debounce(this.privateSendUpdate.bind(this), 200)
 
@@ -85,9 +86,7 @@ module.exports = class MetamaskController extends EventEmitter {
     })
     this.infuraController.scheduleInfuraNetworkCheck()
 
-    this.blacklistController = new BlacklistController({
-      initState: initState.BlacklistController,
-    })
+    this.blacklistController = new BlacklistController()
     this.blacklistController.scheduleUpdates()
 
     // rpc provider
@@ -96,10 +95,9 @@ module.exports = class MetamaskController extends EventEmitter {
 
     this.recentBlocksController = new RecentBlocksController({
       blockTracker: this.blockTracker,
+      provider: this.provider,
     })
 
-    // eth data query tools
-    this.ethQuery = new EthQuery(this.provider)
     // account tracker watches balances, nonces, and any code at their address.
     this.accountTracker = new AccountTracker({
       provider: this.provider,
@@ -140,7 +138,6 @@ module.exports = class MetamaskController extends EventEmitter {
       signTransaction: this.keyringController.signTransaction.bind(this.keyringController),
       provider: this.provider,
       blockTracker: this.blockTracker,
-      ethQuery: this.ethQuery,
       getGasPrice: this.getGasPrice.bind(this),
     })
     this.txController.on('newUnapprovedTx', opts.showUnapprovedTx.bind(opts))
@@ -201,12 +198,7 @@ module.exports = class MetamaskController extends EventEmitter {
     this.networkController.store.subscribe((state) => {
       this.store.updateState({ NetworkController: state })
     })
-    this.blacklistController.store.subscribe((state) => {
-      this.store.updateState({ BlacklistController: state })
-    })
-    this.recentBlocksController.store.subscribe((state) => {
-      this.store.updateState({ RecentBlocks: state })
-    })
+
     this.infuraController.store.subscribe((state) => {
       this.store.updateState({ InfuraController: state })
     })
@@ -349,6 +341,7 @@ module.exports = class MetamaskController extends EventEmitter {
       addNewAccount: nodeify(this.addNewAccount, this),
       placeSeedWords: this.placeSeedWords.bind(this),
       clearSeedWordCache: this.clearSeedWordCache.bind(this),
+      resetAccount: this.resetAccount.bind(this),
       importAccountWithStrategy: this.importAccountWithStrategy.bind(this),
 
       // vault management
@@ -490,9 +483,15 @@ module.exports = class MetamaskController extends EventEmitter {
   getGasPrice () {
     const { recentBlocksController } = this
     const { recentBlocks } = recentBlocksController.store.getState()
+
+    // Return 1 gwei if no blocks have been observed:
+    if (recentBlocks.length === 0) {
+      return '0x' + GWEI_BN.toString(16)
+    }
+
     const lowestPrices = recentBlocks.map((block) => {
-      if (!block.gasPrices) {
-        return new BN(0)
+      if (!block.gasPrices || block.gasPrices.length < 1) {
+        return GWEI_BN
       }
       return block.gasPrices
       .map(hexPrefix => hexPrefix.substr(2))
@@ -502,6 +501,7 @@ module.exports = class MetamaskController extends EventEmitter {
       })[0]
     })
     .map(number => number.div(GWEI_BN).toNumber())
+
     const percentileNum = percentile(50, lowestPrices)
     const percentileNumBn = new BN(percentileNum)
     return '0x' + percentileNumBn.mul(GWEI_BN).toString(16)
@@ -536,10 +536,15 @@ module.exports = class MetamaskController extends EventEmitter {
 
   async createNewVaultAndRestore (password, seed) {
     const release = await this.createVaultMutex.acquire()
-    const vault = await this.keyringController.createNewVaultAndRestore(password, seed)
-    this.selectFirstIdentity(vault)
-    release()
-    return vault
+    try {
+      const vault = await this.keyringController.createNewVaultAndRestore(password, seed)
+      this.selectFirstIdentity(vault)
+      release()
+      return vault
+    } catch (err) {
+      release()
+      throw err
+    }
   }
 
   selectFirstIdentity (vault) {
@@ -592,6 +597,13 @@ module.exports = class MetamaskController extends EventEmitter {
     this.configManager.setSeedWords(null)
     cb(null, this.preferencesController.getSelectedAddress())
   }
+
+  resetAccount (cb) {
+    const selectedAddress = this.preferencesController.getSelectedAddress()
+    this.txController.wipeTransactions(selectedAddress)
+    cb(null, selectedAddress)
+  }
+
 
   importAccountWithStrategy (strategy, args, cb) {
     accountImporter.importAccount(strategy, args)

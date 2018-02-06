@@ -19,6 +19,8 @@ var manifest = require('./app/manifest.json')
 var gulpif = require('gulp-if')
 var replace = require('gulp-replace')
 var mkdirp = require('mkdirp')
+var asyncEach = require('async/each')
+var exec = require('child_process').exec
 
 var disableDebugTools = gutil.env.disableDebugTools
 var debug = gutil.env.debug
@@ -153,11 +155,23 @@ gulp.task('copy:watch', function(){
   gulp.watch(['./app/{_locales,images}/*', './app/scripts/chromereload.js', './app/*.{html,json}'], gulp.series('copy'))
 })
 
+// record deps
+
+gulp.task('deps', function (cb) {
+  exec('npm ls', (err, stdoutOutput, stderrOutput) => {
+    if (err) return cb(err)
+    const browsers = ['firefox','chrome','edge','opera']
+    asyncEach(browsers, (target, done) => {
+      fs.writeFile(`./dist/${target}/deps.txt`, stdoutOutput, done)
+    }, cb)
+  })
+})
+
 // lint js
 
 gulp.task('lint', function () {
   // Ignoring node_modules, dist/firefox, and docs folders:
-  return gulp.src(['app/**/*.js', 'ui/**/*.js', 'mascara/src/*.js', 'mascara/server/*.js', '!node_modules/**', '!dist/firefox/**', '!docs/**', '!app/scripts/chromereload.js', '!mascara/test/jquery-3.1.0.min.js'])
+  return gulp.src(['app/**/*.js', '!app/scripts/vendor/**/*.js', 'ui/**/*.js', 'mascara/src/*.js', 'mascara/server/*.js', '!node_modules/**', '!dist/firefox/**', '!docs/**', '!app/scripts/chromereload.js', '!mascara/test/jquery-3.1.0.min.js'])
     .pipe(eslint(fs.readFileSync(path.join(__dirname, '.eslintrc'))))
     // eslint.format() outputs the lint results to the console.
     // Alternatively use eslint.formatEach() (see Docs).

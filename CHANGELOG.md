@@ -2,11 +2,51 @@
 
 ## Current Master
 
+## 3.14.1 2018-2-1
+
+- Further fix scrolling for Firefox.
+
+## 3.14.0 2018-2-1
+
+- Removed unneeded data from storage
+- Add a "reset account" feature to Settings
+- Add warning for importing some kinds of files.
+- Scrollable Setting view for Firefox.
+
+## 3.13.8 2018-1-29
+
+- Fix provider for Kovan network.
+- Bump limit for EventEmitter listeners before warning.
+- Display Error when empty string is entered as a token address.
+
+## 3.13.7 2018-1-22
+
+- Add ability to bypass gas estimation loading indicator.
+- Forward failed transactions to Sentry error reporting service
+- Re-add changes from 3.13.5
+
+## 3.13.6 2017-1-18
+
+- Roll back changes to 3.13.4 to fix some issues with the new Infura REST provider.
+
+## 3.13.5 2018-1-16
+
+- Estimating gas limit for simple ether sends now faster & cheaper, by avoiding VM usage on recipients with no code.
+- Add an extra px to address for Firefox clipping.
+- Fix Firefox scrollbar.
+- Open metamask popup for transaction confirmation before gas estimation finishes and add a loading screen over transaction confirmation.
+- Fix bug that prevented eth_signTypedData from signing bytes.
+- Further improve gas price estimation.
+
+## 3.13.4 2018-1-9
+
+- Remove recipient field if application initializes a tx with an empty string, or 0x, and tx data. Throw an error with the same condition, but without tx data.
 - Improve gas price suggestion to be closer to the lowest that will be accepted.
 - Throw an error if a application tries to submit a tx whose value is a decimal, and inform that it should be in wei.
 - Fix bug that prevented updating custom token details.
 - No longer mark long-pending transactions as failed, since we now have button to retry with higher gas.
 - Fix rounding error when specifying an ether amount that has too much precision.
+- Fix bug where incorrectly inputting seed phrase would prevent any future attempts from succeeding.
 
 ## 3.13.3 2017-12-14
 
