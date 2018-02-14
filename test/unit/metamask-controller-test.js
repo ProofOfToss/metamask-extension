@@ -2,32 +2,44 @@ const assert = require('assert')
 const sinon = require('sinon')
 const clone = require('clone')
 const MetaMaskController = require('../../app/scripts/metamask-controller')
-const firstTimeState = require('../../app/scripts/first-time-state')
+const BlacklistController = require('../../app/scripts/controllers/blacklist')
+const firstTimeState = require('../stub/first-time-state')
 const BN = require('ethereumjs-util').BN
 const GWEI_BN = new BN('1000000000')
+const { createTestProviderTools } = require('../stub/provider')
 
 describe('MetaMaskController', function () {
+  // provider stub
+  const providerResultStub = {}
+  const providerTools = createTestProviderTools({ scaffold: providerResultStub })
+  const provider = providerTools.provider
+
   const noop = () => {}
   const metamaskController = new MetaMaskController({
+    blacklistController: stubbedBlacklist,
+    provider,
     showUnconfirmedMessage: noop,
     unlockAccountMessage: noop,
     showUnapprovedTx: noop,
     platform: {},
     encryptor: {
-      encrypt: function(password, object) {
+      encrypt: function (password, object) {
         this.object = object
         return Promise.resolve()
       },
       decrypt: function () {
         return Promise.resolve(this.object)
-      }
+      },
     },
     // initial state
     initState: clone(firstTimeState),
   })
 
+  // blacklist mocking
+  const stubbedBlacklist = sinon.createStubInstance(BlacklistController)
+  sinon.stub(metamaskController.blacklistController, 'scheduleUpdates').callsFake(function () {})
+
   beforeEach(function () {
-    // sinon allows stubbing methods that are easily verified
     this.sinon = sinon.sandbox.create()
   })
 
