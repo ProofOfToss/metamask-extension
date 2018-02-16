@@ -135,13 +135,40 @@ InfoScreen.prototype.render = function () {
                 ]),
               ]),
 
+              h('div', [
+                h('.fa.fa-linkedin', [
+                  h('a.info', {
+                    href: 'https://www.linkedin.com/company/proof-of-toss/',
+                    target: '_blank',
+                  }, 'LinkedIn'),
+                ]),
+              ]),
+
+              h('div', [
+                h('.fa.fa-facebook', [
+                  h('a.info', {
+                    href: 'https://fb.me/ProofOfToss',
+                    target: '_blank',
+                  }, 'Facebook'),
+                ]),
+              ]),
+
+              h('div', [
+                h('.fa.fa-twitter', [
+                  h('a.info', {
+                    href: 'https://t.me/proofoftoss',
+                    target: '_blank',
+                  }, 'Join us on Telegram'),
+                ]),
+              ]),
+
               h('div.fa.fa-envelope', [
                 h('a.info', {
                   target: '_blank',
-                  style: { width: '85vw' },
-                  href: 'mailto:help@toss.pro?subject=Feedback',
+                  href: 'mailto:info@toss.pro?subject=MetaMask Support',
                 }, 'Email us!'),
               ]),
+
             ]),
         ]),
       ]),
